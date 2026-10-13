@@ -52,9 +52,24 @@ jobs:
           test -f main.py
           test -f buildozer.spec
 
+            - name: Accept Android SDK Licenses
+        run: |
+          SDK="$HOME/.buildozer/android/platform/android-sdk"
+
+          mkdir -p "$SDK"
+
+          SDKMANAGER=$(find "$SDK" -type f -name sdkmanager 2>/dev/null | head -n 1)
+
+          if [ -z "$SDKMANAGER" ]; then
+            echo "SDK manager not found. Buildozer must initialize Android SDK first."
+            exit 1
+          fi
+
+          yes | "$SDKMANAGER" --sdk_root="$SDK" --licenses
+
       - name: Build Android APK
         run: |
-          buildozer android debug
+          yes | buildozer android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
