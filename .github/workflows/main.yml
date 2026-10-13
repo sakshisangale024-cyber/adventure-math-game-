@@ -34,6 +34,27 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           pip install buildozer cython==0.29.36
       - name: Build APK
+            - name: Install Android Build Tools
+        run: |
+          SDK="$HOME/.buildozer/android/platform/android-sdk"
+
+          echo "Searching for Android SDK manager..."
+          SDKMANAGER=$(find "$SDK" -type f -name sdkmanager 2>/dev/null | head -n 1)
+
+          if [ -z "$SDKMANAGER" ]; then
+            echo "Android SDK manager not found."
+            echo "The SDK setup needs to be checked."
+            exit 1
+          fi
+
+          yes | "$SDKMANAGER" --sdk_root="$SDK" --licenses || true
+
+          "$SDKMANAGER" --sdk_root="$SDK" \
+            "platform-tools" \
+            "platforms;android-35" \
+            "build-tools;35.0.0"
+
+          find "$SDK/build-tools" -name aidl -type f
         run: |
           buildozer android debug
 
